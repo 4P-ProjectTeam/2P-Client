@@ -6,7 +6,7 @@ import cookie from 'react-cookies';
 import Gameover from '../../Components/PlayGame/Gameover';
 import MoleScoreCard from '../../Components/PlayGame/MoleScoreCard';
 
-import { Paper, Grid, Fab, Tooltip, GridList, GridListTile, Typography } from '@material-ui/core';
+import { Paper, Button, Grid, Fab, Tooltip, GridList, GridListTile, Typography } from '@material-ui/core';
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
 import { withStyles } from '@material-ui/core/styles';
 import { isDeleteExpression } from 'typescript';
@@ -17,7 +17,6 @@ import clicked from '../../images/clicked.png';
 
 const styles = (theme) => ({
   Paper: {
-    
     backgroundColor: 'white',
     margin: theme.spacing(3, 3),
     background: '#00babd',
@@ -57,10 +56,8 @@ const styles = (theme) => ({
   },
 });
 
-let blockX;
-let dx = 10;
-let preKey;
 let moles = [];
+let moleTimer
 
 class MoleGame extends Component {
   constructor(props) {
@@ -95,7 +92,7 @@ class MoleGame extends Component {
     this.gifCount = 0;
 
     // socket connection endpoint
-    this.socket = socketio.connect('http://13.125.22.16:3009');
+    this.socket = socketio.connect('http://3.35.27.36:3009');
 
     for (let i = 0; i < 16; i++) {
       moles.push(new Mole(this.state.width, this.state.height, 15, i));
@@ -122,9 +119,6 @@ class MoleGame extends Component {
       'mousedown',
       (e) => {
         this.mousePressed(e.layerX, e.layerY);
-        // for(let i=0; i<16; i++){
-        //   this.randomMole(i)
-        // }
         this.cursorClick = true;
       },
       false
@@ -158,7 +152,7 @@ class MoleGame extends Component {
 
     this.socket.on('generateMole', (index) => {
       this.setState({ currentMole: this.state.currentMole + 1 });
-      this.randomMole(index);
+      moles[index].generateMole();
     });
 
     this.socket.on('updateScore', (data) => {
@@ -186,7 +180,11 @@ class MoleGame extends Component {
     });
 
     this.socket.on('init', ([usernames, currentMole, score, avatarIds]) => {
+      console.log('usernames, currentMole, score, avatarIds: ', usernames, currentMole, score, avatarIds);
+
       const opponentUsername = usernames.filter((username) => cookie.load('username') !== username);
+      console.log('opponentUsername: ', opponentUsername);
+
       const players = Object.keys(score);
       let myScore, opponentScore;
       players.forEach((player) => {
@@ -213,13 +211,17 @@ class MoleGame extends Component {
 
   componentWillUnmount() {
     moles = [];
+    if(cookie.load('selectedRoom') === undefined) {
+      this.socket.emit('leaveComputerMode')
+      clearInterval(moleTimer);
+    }
     this.socket.disconnect();
   }
 
   mousePressed(mouseX, mouseY) {
     for (let i = 0; i < moles.length; i++) {
       let clickedMole = moles[i].clicked(mouseX, mouseY, i, this.ctx);
-      if (clickedMole) {
+      if (clickedMole && this.state.opponentUsername[0] !== 'COMPUTER') {
         const data = {
           gameRoomId: cookie.load('selectedRoom'),
           currentMole: this.state.currentMole,
@@ -227,14 +229,13 @@ class MoleGame extends Component {
           index: clickedMole,
         };
         this.socket.emit('moleClick', data);
+      } else if (clickedMole && this.state.opponentUsername[0] === 'COMPUTER') {
+        moles[clickedMole].hideMole();
+        this.setState({ myScore: this.state.myScore + 1});
       }
     }
   }
 
-  // moles배열에서 랜덤한 인덱스의 mole이 나옴
-  randomMole(index) {
-    moles[index].showMole();
-  }
 
   // 화면그리기
   animate(t) {
@@ -248,10 +249,11 @@ class MoleGame extends Component {
 
     // 마우스가 canvas에 들어온 경우 망치이미지 생성
     if (this.cursorEnter) {
+      let size = this.stageWidth/20
       if (this.cursorClick) {
-        this.ctx.drawImage(this.clickedCursor, this.cursorX - 10, this.cursorY - 30, 50, 50);
+        this.ctx.drawImage(this.clickedCursor, this.cursorX - size/7, this.cursorY - size/2, size, size);
       } else {
-        this.ctx.drawImage(this.hemmer, this.cursorX - 10, this.cursorY - 30, 50, 50);
+        this.ctx.drawImage(this.hemmer, this.cursorX - size/7, this.cursorY - size/2, size, size);
       }
     }
   }
@@ -291,11 +293,57 @@ class MoleGame extends Component {
     }, 2500);
   }
 
+  // 컴퓨터모드 실행
+  computerModeStart() {
+    this.socket.emit(
+      'gameStart',
+      cookie.load('username'),
+      cookie.load('selectedRoom'),
+      12,
+      'COMPUTER',
+    );
+    this.computerRandomMole()
+  }
+
+  // moles배열에서 주어진 인덱스의 mole이 나옴
+  computerRandomMole() {
+    let count = 0;
+    moleTimer = setInterval(() => {
+      let randomIndex = Math.floor(Math.random() * 16);
+      let randomTime = Math.floor(Math.random() * 3);
+      moles[randomIndex].showMole();
+
+      setTimeout(() => {
+        try {
+          count ++
+          let missed = moles[randomIndex].hideMole()
+          if(missed) this.setState({opponentScore : this.state.opponentScore + 1})
+          if (count === 11) {
+            clearInterval(moleTimer);
+            this.gameover()
+          }
+        } catch (err) {
+          console.log(err)
+        }
+      }, 500 + (randomTime * 300));
+    }, 3000);
+  }
+
+  gameover() {
+    if (this.state.myScore > this.state.opponentScore) this.setState({winner: cookie.load('username')})
+    else this.setState({winner: 'Computer'})
+  }
+ 
   render() {
     const { classes, avatar } = this.props;
+
     return (
       <Grid container direction='row' justify='space-evenly' alignItems='center' style={{ marginTop: `${this.state.width/4}px`}}>
-        {this.state.winner !== '' ? <Gameover winner={this.state.winner} /> : null}
+        {this.state.winner !== '' 
+          ? this.state.opponentUsername === 'COMPUTER'
+            ? <Gameover winner={this.state.winner} isComputer={true}/>
+            : <Gameover winner={this.state.winner} />
+          : null}
 
         <Grid item>
           <Paper 
@@ -307,21 +355,45 @@ class MoleGame extends Component {
             }}
           >
             <Grid container direction='column' justify='center' alignItems='center'>
-              <img 
-                src={this.state.rivalAvatar} 
-                style={{
-                  width: this.state.width/2,
-                  height: this.state.width/2.2,
-                }}
-              ></img>
-              <Typography 
-                className={classes.pos} 
-                style={{
-                  fontSize: `${this.state.width/15}px`
-                }}
-              >
-                {'Rival'}
-              </Typography>
+              {
+                !this.state.opponentUsername.length
+                ? <Button color="secondary" 
+                    disableElevation 
+                    style={{
+                      width: `${this.state.width / 2}px`,
+                      height: `${this.state.width / 2}px`,
+                    }} 
+                    variant="outlined" 
+                    onClick={() => {
+                      console.log('clicked')
+                      this.computerModeStart();
+                  }}>
+                    <Typography style={{ 
+                      fontSize: `${this.state.width/15}px`
+                    }}>
+                      컴퓨터<br/>대결시작
+                    </Typography>
+                  </Button>
+                : 
+                <>
+                  <img 
+                    src={this.state.rivalAvatar} 
+                    style={{
+                      width: this.state.width/2,
+                      height: this.state.width/2.2,
+                    }}
+                  />
+                  <Typography 
+                    className={classes.pos} 
+                    style={{
+                      fontSize: `${this.state.width/15}px`
+                    }}
+                  >
+                    {this.state.opponentUsername}
+                  </Typography>
+                </>
+              }
+
               <Typography 
                 className={classes.pos} 
                 style={{
@@ -330,6 +402,7 @@ class MoleGame extends Component {
               >
                 {this.state.opponentScore}
               </Typography>
+
             </Grid>
           </Paper>
         </Grid>

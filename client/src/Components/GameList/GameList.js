@@ -36,8 +36,8 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     width: '200px',
-    height: '200px',
-    margin: theme.spacing(1)
+    height: '100px',
+    margin: theme.spacing(3)
   },
 }));
 
@@ -58,6 +58,14 @@ const gameDescription = {
     code: 3,
   },
 };
+
+// 비로그인 유저
+const guestLogin = () => {
+  let randomName = Math.random().toString(36).substr(2, 5)
+  let randomAvatar = String(Math.floor(Math.random() * 12))
+  cookie.save('username', `Guest_${randomName}`, { path: '/' })
+  cookie.save('avatarId', randomAvatar, { path: '/' })
+}
 
 const GameList = ({ image, gameName, getRooms, selectGame, makeRooms }) => {
   const classes = useStyles();
@@ -93,10 +101,10 @@ const GameList = ({ image, gameName, getRooms, selectGame, makeRooms }) => {
             </Typography>
             <Grid container direction="row" justify="space-evenly" alignItems="center" spacing={3}>
               <Grid item>
-                <Button color="primary" disableElevation className={classes.button} variant="outlined" 
+                <Button color="primary" disableElevation className={classes.button} variant="contained" 
                   onClick={() => {
                     cookie.save('selectedGame', gameDescription[gameName]['code'], { path: '/' })
-                    getRooms()
+                    if(!cookie.load('username')) guestLogin()
                     history.push('/selectroom')
                   }
                 }>
@@ -106,9 +114,11 @@ const GameList = ({ image, gameName, getRooms, selectGame, makeRooms }) => {
                 </Button>
               </Grid>
               <Grid item>
-                <Button color="secondary" disableElevation className={classes.button} variant="outlined" 
+                <Button color="secondary" disableElevation className={classes.button} variant="contained"
+                  style={{ marginLeft: '-40px'}} 
                   onClick={() => {
                     cookie.save('selectedGame', gameDescription[gameName]['code'], { path: '/' })
+                    if(!cookie.load('username')) guestLogin()
                     makeRooms()
                   }}
                 >
@@ -118,6 +128,21 @@ const GameList = ({ image, gameName, getRooms, selectGame, makeRooms }) => {
                 </Button>
               </Grid>
             </Grid>
+            <Button disableElevation variant="contained" 
+              style={{
+                width: '450px',
+                height: '50px',
+              }}
+              onClick={() => {
+                cookie.save('selectedGame', gameDescription[gameName]['code'], { path: '/' })
+                if(!cookie.load('username')) guestLogin()
+                history.push('/playgame')
+              }}
+            >
+              <Typography variant='h6'>
+                연습하기
+              </Typography>
+            </Button>
           </Paper>
         </Grow>
         :
@@ -137,19 +162,6 @@ const GameList = ({ image, gameName, getRooms, selectGame, makeRooms }) => {
 
 const mapReduxDispatchToReactProps = (dispatch) => {
   return {
-    getRooms: async function () {
-      // try {
-      //   const response = await axios({
-      //     method: 'get',
-      //     url: 'http://3.34.178.78:3001/rooms/roomlist',
-      //     withCredentials: true,
-      //   })
-      //   console.log(response)
-      // } catch (err) {
-      //   console.log(err)
-      // }
-      // dispatch({ type: 'GET_ROOMS' });
-    },
     makeRooms: function () {
       dispatch({ type: 'MAKE_ROOM' });
     },

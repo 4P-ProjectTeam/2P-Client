@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Gameover from '../../Components/PlayGame/Gameover';
 
-import { Paper, Typography, Tooltip, Fab, Grid, GridList, GridListTile } from '@material-ui/core';
+import { Paper, Typography, Tooltip, Fab, Grid, GridList, GridListTile, Button } from '@material-ui/core';
 
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
 
@@ -149,10 +149,116 @@ class Game extends Component {
 
     // gif frame
     this.frame = 0;
+
+    // computer
+    this.computer = {
+      avatarId: 'https://image.flaticon.com/icons/svg/603/603506.svg',
+      username: 'COMPUTER',
+    }
+
+    // computer block collision (0: 좌측, 1: 우측)
+    this.blockCollision = -1;
+
+    // computer magazine
+    this.computerMag = 10;
   }
 
+  computerModeStart() {
+    socket.emit('computerMode');
+    this.setState({
+      rivalAvatar: this.computer.avatarId,
+      rivalName: this.computer.username
+    });
+    setTimeout(() => {
+      this.moveComputerBlock();
+      this.shotComputerBlock();
+    }, 3000);
+  }
+
+  moveComputerBlock() {
+    let ranDistance = Math.floor(Math.random()*3)
+    let ranDirection
+    if(this.blockCollision !== -1){
+      this.move(ranDistance, this.blockCollision)
+      this.blockCollision = -1
+    }
+    else {
+      ranDirection = Math.floor(Math.random()*2)
+      this.move(ranDistance, ranDirection)
+    }
+  }
+
+  move(dis, dir) {
+    setTimeout(() => {
+      if (dir === 0) this.RivalPosX += this.blockSizeX
+      else if (dir === 1) this.RivalPosX -= this.blockSizeX
+      
+      dis -= 1
+      if (dis !== -1) this.move(dis, dir)
+      else if (dis === -1) this.moveComputerBlock()
+    }, 200)
+  }
+
+  shotComputerBlock() {
+    let shotDir = [-1, 0, 1];
+    let angle = Math.floor(Math.random()*3)
+    let num = Math.floor(Math.random()*6)
+
+
+    if(this.computerMag - num < 0){
+      setTimeout(() => {
+        this.computerMag = 10;
+        this.shotComputerBlock();
+      }, 2000);
+    } else {
+      this.computerMag -= num
+      this.shot(shotDir[angle], num)
+    }
+  }
+
+  shot(ang, num) {
+    setTimeout(() => {
+      this.rivalShot(ang)
+      num -= 1
+      if (num !== -1) this.shot(ang, num);
+      else if (num === -1) {
+        setTimeout(() => {
+          this.shotComputerBlock()
+        }, 700)
+      }
+    }, 200)
+  }
+
+  rivalShot(e) {
+    if (e === 1) {
+      // right (this.aim === 1)
+      this.RivalMoveX = this.BulletSpeed * -1;
+      this.RivalMoveY = this.BulletSpeed;
+    } else if (e === 0) {
+      // center (this.aim === 0)
+      this.RivalMoveX = 0;
+      this.RivalMoveY = this.BulletSpeed * 2;
+    } else if (e === -1) {
+      // left (this.aim === -1)
+      this.RivalMoveX = this.BulletSpeed;
+      this.RivalMoveY = this.BulletSpeed;
+    }
+    let bullet = new Bullet(
+      this.state.width,
+      this.state.height,
+      this.BulletRadius,
+      this.RivalMoveX,
+      this.RivalMoveY,
+      this.RivalPosX,
+      this.RivalPosY + this.RivalSizeY,
+      this.RivalSizeX
+    );
+    this.RivalBullets.push(bullet);
+  }
+
+
   componentDidMount() {
-    socket = socketio.connect('http://15.164.170.101:3005');
+    socket = socketio.connect('http://3.35.27.36:3005');
 
     (() => {
       socket.emit('joinRoom', {
@@ -209,32 +315,7 @@ class Game extends Component {
     });
 
     // Rival shot (mirror)
-    socket.on('rivalShot', (e) => {
-      if (e === 1) {
-        // right (this.aim === 1)
-        this.RivalMoveX = this.BulletSpeed * -1;
-        this.RivalMoveY = this.BulletSpeed;
-      } else if (e === 0) {
-        // center (this.aim === 0)
-        this.RivalMoveX = 0;
-        this.RivalMoveY = this.BulletSpeed * 2;
-      } else if (e === -1) {
-        // left (this.aim === -1)
-        this.RivalMoveX = this.BulletSpeed;
-        this.RivalMoveY = this.BulletSpeed;
-      }
-      let bullet = new Bullet(
-        this.state.width,
-        this.state.height,
-        this.BulletRadius,
-        this.RivalMoveX,
-        this.RivalMoveY,
-        this.RivalPosX,
-        this.RivalPosY + this.RivalSizeY,
-        this.RivalSizeX
-      );
-      this.RivalBullets.push(bullet);
-    });
+    socket.on('rivalShot', (e) => this.rivalShot(e));
 
     socket.on('moveLeft', () => {
       this.RivalPosX += this.blockSizeX;
@@ -366,8 +447,10 @@ class Game extends Component {
     }
     if (this.RivalPosX < 0) {
       this.RivalPosX = 0;
+      this.blockCollision = 0;
     } else if (this.RivalPosX > this.state.width - this.RivalSizeX) {
       this.RivalPosX = this.state.width - this.RivalSizeX;
+      this.blockCollision = 1;
     }
     window.requestAnimationFrame(this.animate.bind(this));
 
@@ -393,7 +476,6 @@ class Game extends Component {
     this.ctx.fillStyle = '#fff'
     
     if (this.state.gameStart && Math.floor(this.state.width/this.frame) !== 5) {
-      console.log('this.state.width/this.frame: ', this.state.width/this.frame);
       this.ctx.font = `${ this.state.width/5 + this.state.width/this.frame }px sanseif`
       this.ctx.fillText(
         'Start!', 
@@ -424,9 +506,14 @@ class Game extends Component {
         );
         if (response) {
           this.bullets.splice(i, 1);
-          if (response.result) this.setState({ rivalScore: this.state.rivalScore - 10 });
-          console.log(this.state.myScore);
-          socket.emit('score', this.state.rivalScore)
+          if (response.result) {
+            this.setState({ rivalScore: this.state.rivalScore - 10 });
+            if (this.state.rivalName !== 'COMPUTER') {
+              socket.emit('score', this.state.rivalScore);
+            } else if (this.state.rivalName === 'COMPUTER' && this.state.rivalScore === 0){
+              this.setState({ winner: `${this.state.userName}`})
+            }
+          }
         }
       }
     }
@@ -441,7 +528,15 @@ class Game extends Component {
           this.blockSizeX,
           this.blockSizeY
         );
-        if (response) this.RivalBullets.splice(i, 1);
+        if (response) {
+          this.RivalBullets.splice(i, 1);
+          if (response.result && this.state.rivalName === 'COMPUTER') {
+            this.setState({ myScore: this.state.myScore - 10 });
+            if(this.state.myScore === 0){
+              this.setState({ winner: 'Computer'})
+            }
+          }
+        }
       }
     }
 
@@ -490,10 +585,14 @@ class Game extends Component {
 
   render() {
     const { classes, avatarImg } = this.props;
-    console.log(this.props)
+
     return (
       <Grid container direction='row' justify='space-evenly' alignItems='center'>
-        {this.state.winner !== '' ? <Gameover winner={this.state.winner} /> : null}
+        {this.state.winner !== '' 
+          ? this.state.rivalName === 'COMPUTER'
+            ? <Gameover winner={this.state.winner} isComputer={true}/>
+            : <Gameover winner={this.state.winner} />
+          : null}
 
         <Grid item>
           <Paper 
@@ -506,22 +605,45 @@ class Game extends Component {
             }}
           >
             <Grid container direction='column' justify='center' alignItems='center'>
-              <img 
-                alt='들어오는중'
-                src={this.state.rivalAvatar} 
-                style={{
-                  width: this.state.width/2,
-                  height: this.state.width/2.2,
-                }}
-              ></img>
-              <Typography 
-                className={classes.pos} 
-                style={{
-                  fontSize: `${this.state.width/15}px`
-                }}
-              >
-                {this.state.rivalName}
-              </Typography>
+              {
+                // 상대유저가 들어오지 않은 경우
+                !this.state.rivalName
+                ? <Button color="secondary" 
+                    disableElevation 
+                    style={{
+                      width: `${this.state.width / 2}px`,
+                      height: `${this.state.width / 2}px`,
+                    }} 
+                    variant="outlined" 
+                    onClick={() => {
+                      console.log('clicked')
+                      this.computerModeStart();
+                  }}>
+                    <Typography style={{ 
+                      fontSize: `${this.state.width/15}px`
+                    }}>
+                      컴퓨터<br/>대결시작
+                    </Typography>
+                  </Button>
+                : <div>
+                    <img 
+                      alt='들어오는중'
+                      src={this.state.rivalAvatar} 
+                      style={{
+                        width: this.state.width/2,
+                        height: this.state.width/2.2,
+                      }}
+                    ></img>
+                    <Typography 
+                      className={classes.pos} 
+                      style={{
+                        fontSize: `${this.state.width/15}px`
+                      }}
+                    >
+                      {this.state.rivalName}
+                    </Typography>
+                  </div>
+              }
               <Typography 
                 className={classes.pos} 
                 style={{
@@ -563,6 +685,11 @@ class Game extends Component {
                 marginRight: '40px', 
                 width: `${this.state.width / 2}px`,
                 height: `${this.state.width / 1.2}px`,
+                boxShadow: `${
+                  this.state.bullet === 0
+                  ? '1px 1px 100px 0px #00535c'
+                  : ''
+                }`
               }}
             >
             <Grid container direction='column' justify='center' alignItems='center'>
@@ -622,7 +749,6 @@ class Game extends Component {
                     key={tile.img}
                     style={{ height: '100px' }}
                     onClick={() => {
-                      console.log('this.state.showEmojis: ', this.state.isActive);
                       if (this.state.isActive === false) {
                         this.activeEmoji(tile.img);
                         this.setState({

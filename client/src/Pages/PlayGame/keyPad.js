@@ -157,7 +157,6 @@ export class KeyPad {
   
 
   position(stageWidth, stageHeight, index) {
-    console.log(index)
     if(index !== 0){
       if (index < 5) {
         this.x = stageWidth / 4.9 + (stageWidth / 5) * (index - 1);

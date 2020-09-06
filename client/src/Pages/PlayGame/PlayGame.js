@@ -76,7 +76,7 @@ class PlayGame extends Component {
         pos: 90,
         shadow: '1px 1px 100px 0px #00535c',
       }, {
-        tag: <PongGame />,
+        tag: <BDman />,
         color: '#000',
         pos: 90,
         shadow: '-40px 0px 100px 0px #5c0200, 30px 0px 100px 0px #5e5d00',
@@ -91,14 +91,9 @@ class PlayGame extends Component {
 
   componentWillMount() {
     if (!cookie.load('selectedGame')) {
-      this.props.history.push('/selectgame')
+      this.props.history.push('/')
     } 
-    else if (!cookie.load('selectedRoom')) {
-      this.props.history.push('/selectroom')
-    } 
-    else if (!cookie.load('isPlaying')) {
-      this.props.history.push('/waitingroom')
-    }
+    
   }
 
   componentWillUnmount() {
@@ -120,7 +115,7 @@ class PlayGame extends Component {
                 style={{ 
                   paddingTop: `${this.games[cookie.load('selectedGame')]['pos']}px`,
                   height: `${Math.floor(document.body.clientHeight / 1.2) + this.games[cookie.load('selectedGame')]['pos']}px`,
-                  // boxShadow: this.games[cookie.load('selectedGame')]['shadow'],
+                  boxShadow: this.games[cookie.load('selectedGame')]['shadow'],
                 }}>
                   { this.games[cookie.load('selectedGame')]['tag'] }
               </Paper> 

@@ -81,7 +81,7 @@ class Nav extends Component {
     try {
       const response = await axios({
         method: 'post',
-        url: 'http://3.34.178.78:3001/users/signout',
+        url: 'http://3.35.27.36:3001/users/signout',
         withCredentials: true,
       });
       console.log(response);
@@ -94,7 +94,7 @@ class Nav extends Component {
     try {
       const response = await axios({
         method: 'get',
-        url: 'http://3.34.178.78:3001/users/mypage',
+        url: 'http://3.35.27.36:3001/users/mypage',
         withCredentials: true,
       });
       console.log(response);
@@ -111,7 +111,7 @@ class Nav extends Component {
   leaveRoomHandler = async () => {
     axios({
       method: 'post',
-      url: 'http://3.34.178.78:3001/rooms/leaveroom',
+      url: 'http://3.35.27.36:3001/rooms/leaveroom',
       data: {
         roomId: cookie.load('selectedRoom'),
         gameCode: cookie.load('selectedGame'),
@@ -133,15 +133,17 @@ class Nav extends Component {
   clickGoback = () => {
     let location = this.props.history.location.pathname;
     if (location === '/selectroom') {
-      this.props.history.push('/selectgame');
+      this.props.history.push('/');
       cookie.remove('selectedGame', { path: '/' });
     } else if (location === '/waitingroom') {
       this.leaveRoomHandler();
       this.props.history.push('/selectroom');
       cookie.remove('selectedRoom', { path: '/' });
     } else if (location === '/playgame') {
-      this.props.history.push('/waitingroom');
+      this.props.history.goBack();
       cookie.remove('isPlaying', { path: '/' });
+    } else if (location === '/login') {
+      this.props.history.goBack()
     }
   };
 
@@ -151,37 +153,47 @@ class Nav extends Component {
     return (
       <div className={classes.root}>
         <AppBar position='static'>
-          {cookie.load('isPlaying') ? (
-            // 게임화면일때
+          {
+          // 뒤로가기 버튼만 보이는 경우
+          ['/playgame', '/waitingroom'].includes(history.location.pathname)
+          ? (
             <Toolbar>
               <IconButton
                 color='inherit'
                 className={classes.gobackButton}
-                onClick={() => {
-                  cookie.remove('isPlaying', { path: '/' });
-                  history.push('/waitingroom');
-                }}
+                onClick={() => this.clickGoback()}
               >
                 <ArrowBack />
               </IconButton>
             </Toolbar>
           ) : (
-            // 게임화면이 아닐때
             <Toolbar>
-              {cookie.load('username') ? (
-                // 로그인된 경우
-                <div>
-                  {cookie.load('selectedGame') ? (
-                    // 게임을 선택한 경우
-                    <IconButton
-                      color='inherit'
-                      className={classes.gobackButton}
-                      onClick={() => this.clickGoback()}
-                    >
-                      <ArrowBack />
-                    </IconButton>
-                  ) : // 게임을 선택하지않은 경우
-                  null}
+              {/* 메인화면 뒤로가기 없음 */}
+              { history.location.pathname !== '/' 
+              ? (
+                <IconButton
+                  color='inherit'
+                  className={classes.gobackButton}
+                  onClick={() => this.clickGoback()}
+                >
+                  <ArrowBack />
+                </IconButton>
+              ) : null }
+
+              {/* 게스트 로그인시 Login버튼 / 유저 로그인시 Mypage,Login버튼*/}
+              {
+                !cookie.load('username') || cookie.load('username').includes('Guest')
+                ? (
+                  <Button
+                    color='inherit'
+                    className={classes.menuButton}
+                    onClick={() => {
+                      history.push('/login');
+                    }}
+                  >
+                    Login
+                  </Button>
+                ) : (
                   <div className={classes.menuButton}>
                     <Button
                       color='inherit'
@@ -200,23 +212,12 @@ class Nav extends Component {
                     >
                       Logout
                     </Button>
+                    <Modal open={this.state.open} onClose={this.handleOpenClose}>
+                      <Mypage userData={this.resData} />
+                    </Modal>
                   </div>
-                </div>
-              ) : (
-                // 로그인되지 않은 경우
-                <Button
-                  color='inherit'
-                  className={classes.menuButton}
-                  onClick={() => {
-                    history.push('/');
-                  }}
-                >
-                  Login
-                </Button>
-              )}
-              <Modal open={this.state.open} onClose={this.handleOpenClose}>
-                <Mypage userData={this.resData} />
-              </Modal>
+                )
+              }
             </Toolbar>
           )}
         </AppBar>

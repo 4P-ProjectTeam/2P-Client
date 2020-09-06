@@ -77,7 +77,7 @@ export class Bullet {
       const min2 = Math.min(y1, y2);
       const min = Math.min(min1, min2);
 
-      if (min === min1 || min === min2) {    // 좌우
+      if (min === min1 || min === min2) { 
         return true
       } 
     }

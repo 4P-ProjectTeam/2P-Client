@@ -25,14 +25,14 @@ const useStyles = makeStyles({
   },
 });
 
-function Gameover({ winner }) {
+function Gameover({ winner, isComputer }) {
   const classes = useStyles();
   const history = useHistory();
   const [timer, setTimer] = useState(5);
 
   useEffect(() => {
     if (timer < 0) {
-      return history.push('/waitingRoom');
+      return history.goBack();
     }
     setTimeout(() => {
       setTimer(timer - 1);
@@ -59,7 +59,7 @@ function Gameover({ winner }) {
           }
           style={{
             height: `${document.body.clientWidth / 4}px`,
-            opacity: `${winner === cookie.load('username') ? '100%' : '30%'}`,
+            opacity: `${winner === cookie.load('username') ? '100%' : '70%'}`,
           }}
         />
         <CardContent>
@@ -90,7 +90,11 @@ function Gameover({ winner }) {
               color: `${winner === cookie.load('username') ? '#000' : '#fff'}`,
             }}
           >
-            {timer}초 후 대기방으로 이동합니다.
+            {
+              isComputer
+              ? `${timer}초 후 연습모드가 종료됩니다.`
+              : `${timer}초 후 대기방으로 이동합니다.`
+            }
           </Typography>
         </CardContent>
       </CardActionArea>

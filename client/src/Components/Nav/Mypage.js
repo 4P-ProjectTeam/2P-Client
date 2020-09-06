@@ -110,7 +110,7 @@ function Mypage({ avatar, userData }) {
   const [userGameData, GameData] = React.useState([]);
   
   // 아바타 갯수
-  const maxSteps = avatar.length;
+  const maxSteps = avatar.length-1;
 
   const createData = (mole, bid, baseball) => {
     return [
@@ -122,9 +122,7 @@ function Mypage({ avatar, userData }) {
 
   const getUserGameData = () => {
     let gameNames = ['molegame', 'bidman', 'baseballgame']
-
     let winRate = [];
-
     let sample = {
       nickname: "유저닉네임",
       avatar: "유저프로필이미지번호",
@@ -154,8 +152,6 @@ function Mypage({ avatar, userData }) {
         winRate.push(Math.floor(gameData.win / gameData.play * 10))
       }
     })
-    
-    
     GameData(createData(winRate[0], winRate[1], winRate[2]))
   }
 
@@ -177,7 +173,7 @@ function Mypage({ avatar, userData }) {
     try {
       const response = await axios({
         method: 'put',
-        url: 'http://3.34.178.78:3001/users/mypage',
+        url: 'http://3.35.27.36:3001/users/mypage',
         data: {
           userId: cookie.load('username'),
           avatarId: avatarId,
@@ -189,7 +185,7 @@ function Mypage({ avatar, userData }) {
     }
   }
   
-  console.log(userGameData)
+  console.log(typeof avatarId)
   return (
       <Card style={modalStyle} className={classes.paper}>
         <CardHeader
@@ -233,11 +229,7 @@ function Mypage({ avatar, userData }) {
             : cookie.load('selectedRoom')
               ? <Button variant="contained" color="primary" style={{ marginLeft: '45px' }} disabled >아바타 바꾸기</Button>
               : <Button variant="contained" style={{ marginLeft: '45px' }} onClick={() => setAvatar(true)}>아바타 바꾸기</Button>
-                  
           }
-          
-
-          
         </div>
         
         <CardActions disableSpacing>

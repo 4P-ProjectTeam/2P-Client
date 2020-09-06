@@ -9,6 +9,7 @@ import {
   Grid,
   Fab,
   Paper,
+  Button,
   Tooltip,
   Typography,
   makeStyles,
@@ -77,13 +78,14 @@ function SelectRoom({ login, roomList, getRooms, makeRooms, isMaking }) {
 
   React.useEffect(() => {
     console.log(history);
-    if (!cookie.load('username')) {
-      history.push('/');
-    } else if (!cookie.load('selectedGame')) {
-      history.push('/selectgame');
-    } else if (cookie.load('selectedRoom')) {
-      history.push('/waitingroom');
-    }
+    // if (!cookie.load('username')) {
+    //   history.push('/');
+    // } else if (!cookie.load('selectedGame')) {
+    //   history.push('/selectgame');
+    // } else if (cookie.load('selectedRoom')) {
+    //   history.push('/waitingroom');
+    // }
+    
     getRooms(getRoomList);
     selectedGame(Number(cookie.load('selectedGame')));
   }, [currentGame]);
@@ -126,14 +128,15 @@ function SelectRoom({ login, roomList, getRooms, makeRooms, isMaking }) {
       className={classes.section1}
     >
       <Paper className={classes.emptyAlert}>
-        <Grid item>
+        <Grid item style={{ marginTop: '-60px' }}>
           <Typography variant='h4' className={classes.alertText}>
             대기중인 방이 없습니다.
             <br />
             방을 생성해보세요
           </Typography>
         </Grid>
-        <Grid container direction='row' justify='space-evenly' alignItems='center'>
+        <Grid container direction='row' justify='space-evenly' alignItems='center'
+          style={{ marginTop: '-20px' }}>
           <Tooltip
             title='방만들기'
             aria-label='add'
@@ -157,6 +160,20 @@ function SelectRoom({ login, roomList, getRooms, makeRooms, isMaking }) {
             </Fab>
           </Tooltip>
         </Grid>
+        <Button disableElevation variant="contained" 
+            style={{
+              width: '300px',
+              height: '50px',
+              marginTop: '60px'
+            }}
+            onClick={() => {
+              history.push('/playgame')
+            }}
+          >
+            <Typography variant='h6'>
+              연습하기
+            </Typography>
+          </Button>
       </Paper>
     </Grid>
   );
@@ -268,6 +285,23 @@ function SelectRoom({ login, roomList, getRooms, makeRooms, isMaking }) {
               <RefreshIcon />
             </Fab>
           </Tooltip>
+          <Button disableElevation variant="contained" 
+            style={{
+              position: 'fixed',
+              width: '300px',
+              height: '50px',
+              bottom: '2%',
+              left: '50%',
+              marginLeft: '-150px',
+            }}
+            onClick={() => {
+              history.push('/playgame')
+            }}
+          >
+            <Typography variant='h6'>
+              연습하기
+            </Typography>
+          </Button>
         </div>
       )}
     </div>
@@ -289,7 +323,7 @@ const mapReduxDispatchToReactProps = (dispatch) => {
         if (cookie.load('selectedGame') !== '0') {
           const response = await axios({
             method: 'get',
-            url: 'http://3.34.178.78:3001/rooms/roomlist',
+            url: 'http://3.35.27.36:3001/rooms/roomlist',
             params: {
               gameCode: cookie.load('selectedGame'),
             },

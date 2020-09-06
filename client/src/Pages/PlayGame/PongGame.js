@@ -73,7 +73,7 @@ class Game extends Component {
   }
 
   componentDidMount() {
-    socket = socketio.connect('http://15.164.170.101:3005');
+    socket = socketio.connect('http://3.35.27.36:3005');
     (() => {
       socket.emit('joinRoom', {
         username: cookie.load('username'),

@@ -39,7 +39,7 @@ async function socialSignin(userId, socialId, nickname) {
   try {
     const response = await axios({
       method: 'post',
-      url: 'http://3.34.178.78:3001/users/signin',
+      url: 'http://3.35.27.36:3001/users/signin',
       data: {
         userId: userId,
         socialId: socialId,
@@ -58,7 +58,7 @@ async function Mypage() {
   try {
     const response = await axios({
       method: 'get',
-      url: 'http://3.34.178.78:3001/users/mypage',
+      url: 'http://3.35.27.36:3001/users/mypage',
       withCredentials: true,
     })
     return response

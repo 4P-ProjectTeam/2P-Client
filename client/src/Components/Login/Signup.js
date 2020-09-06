@@ -26,7 +26,7 @@ const axios = require('axios')
     try {
       const response = await axios({
         method: 'post',
-        url: 'http://3.34.178.78:3001/users/signup',
+        url: 'http://3.35.27.36:3001/users/signup',
         data: {
           userId: userId,
           nickname: nickname,
@@ -112,7 +112,7 @@ const axios = require('axios')
               onClick={() => {
                 userSignup(username, nickname, password);
                 // signup 성공시 history.push('/selectGame') 이동하게 콜백 넘겨주기
-                // 실패시 콜백으로 localhost:3000 창과 함께 실패했습니다 모달 창 띄워주기
+                // 실패시 콜백으로 3.35.27.36:3000 창과 함께 실패했습니다 모달 창 띄워주기
               }}
               color='primary'
             >

@@ -37,7 +37,7 @@ class App extends Component {
       }
       const diff = Math.random() * 10;
       this.setState({ loading: Math.min(this.state.loading + diff, 100)})
-  }, 100);
+    }, 100);
   }
   componentDidMount() {
     if (!cookie.load('username')) {
@@ -48,8 +48,6 @@ class App extends Component {
 
 
   render() {
-    
-
     return (
       <div className='App'>
         {
@@ -58,10 +56,10 @@ class App extends Component {
               <Nav />
               <Switch>
                 <Route exact path='/'>
-                  <Login />
-                </Route>
-                <Route path='/selectgame'>
                   <SelectGame />
+                </Route>
+                <Route path='/login'>
+                  <Login />
                 </Route>
                 <Route path='/selectroom'>
                   <SelectRoom />
@@ -128,7 +126,7 @@ const Mypage = async () => {
   try {
     const response = await axios({
       method: 'get',
-      url: 'http://3.34.178.78:3001/users/mypage',
+      url: 'http://3.35.27.36:3001/users/mypage',
       withCredentials: true,
     });
     console.log(response);

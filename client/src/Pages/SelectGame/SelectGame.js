@@ -22,11 +22,12 @@ const SelectGame = ({ isLogin }) => {
   const history = useHistory();
 
   React.useEffect(() => {
-    if(!cookie.load('username')){
-      history.push('/')
-    } else if(cookie.load('selectedGame')){
-      history.push('/selectroom')
-    }
+    // if(!cookie.load('username')){
+    //   history.push('/')
+    // } else 
+    // if(cookie.load('selectedGame')){
+    //   history.push('/selectroom')
+    // }
   },[])
 
 

@@ -16,6 +16,7 @@ const initialState = {
     'https://image.flaticon.com/icons/svg/3231/3231488.svg', //
     'https://image.flaticon.com/icons/svg/3231/3231552.svg', 
     'https://image.flaticon.com/icons/svg/3231/3231444.svg',
+    'https://image.flaticon.com/icons/svg/603/603506.svg',
   ],
 };
 

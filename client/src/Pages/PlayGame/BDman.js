@@ -293,26 +293,7 @@ class Game extends Component {
     window.requestAnimationFrame(this.animate.bind(this));
 
     // 블록 이동
-    document.addEventListener('keydown', (e) => {
-      if (e.keyCode === 65) {
-        // 왼쪽
-        socket.emit('moveLeft');
-        this.blockPosX -= this.blockSizeX;
-        // this.RivalPosX -= this.blockSizeX;
-      } else if (e.keyCode === 68) {
-        // 오른쪽
-        socket.emit('moveRight');
-        this.blockPosX += this.blockSizeX;
-        // this.RivalPosX += this.blockSizeX;
-      } else if (e.keyCode === 82) {
-        // 리로드
-        this.setState({ isReload: true });
-        setTimeout(() => {
-          this.setState({ bullet: 10 });
-          this.setState({ isReload: false });
-        }, 2500);
-      }
-    });
+    document.addEventListener('keydown', this.move, true);
 
     // Rival shot (mirror)
     socket.on('rivalShot', (e) => this.rivalShot(e));
@@ -413,7 +394,29 @@ class Game extends Component {
   }
 
   componentWillUnmount() {
+    document.removeEventListener('keydown', this.move, true);
     socket.disconnect();
+  }
+
+  move = (e) => {
+    if (e.keyCode === 65) {
+      // 왼쪽
+      socket.emit('moveLeft');
+      this.blockPosX -= this.blockSizeX;
+      // this.RivalPosX -= this.blockSizeX;
+    } else if (e.keyCode === 68) {
+      // 오른쪽
+      socket.emit('moveRight');
+      this.blockPosX += this.blockSizeX;
+      // this.RivalPosX += this.blockSizeX;
+    } else if (e.keyCode === 82) {
+      // 리로드
+      this.setState({ isReload: true });
+      setTimeout(() => {
+        this.setState({ bullet: 10 });
+        this.setState({ isReload: false });
+      }, 2500);
+    }
   }
 
   calc() {

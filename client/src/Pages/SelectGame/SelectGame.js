@@ -28,19 +28,20 @@ const SelectGame = ({ isLogin }) => {
     // if(cookie.load('selectedGame')){
     //   history.push('/selectroom')
     // }
+
   },[])
 
 
   return (
       <Grid className={ classes.flexContainer } container direction="column" justify="space-evenly" alignItems="center">
         <Grid container direction="row" justify="space-evenly" alignItems="center" >
-          <Grid item style={{margin: '25px'}}>
+          <Grid item>
             <GameList image={molethumbnail} gameName='moleGame' />
           </Grid>
-          <Grid item style={{margin: '25px'}}>
+          <Grid item>
             <GameList image={bidthumbnail} gameName='bidGame' />
           </Grid>
-          <Grid item style={{margin: '25px'}}>
+          <Grid item>
             <GameList image={baseballthumbnail} gameName='baseballGame' />
           </Grid>
         </Grid>

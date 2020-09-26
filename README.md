@@ -31,7 +31,12 @@
 
 # Updates
 
-20.09.03 연습하기(컴퓨터 모드) 기능추가
+
+
+<details>
+  <summary>20.09.03 연습하기(컴퓨터 모드) 기능추가</summary>
+  <img src="img/(업데이트)연습모드.gif" width="60%" style="margin: 5px">
+</details>
 
 <br />
 

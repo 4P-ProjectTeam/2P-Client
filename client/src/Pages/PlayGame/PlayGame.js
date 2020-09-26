@@ -70,11 +70,17 @@ class PlayGame extends Component {
   }
   
   componentDidMount() {
-    this.setState({ gameHeight: document.querySelector(this.games[cookie.load('selectedGame')]['id']).clientHeight})
+    this.getHeight();
+    window.addEventListener('resize', this.getHeight.bind(this), false);
   }
 
+  getHeight() {
+    this.setState({ gameHeight: document.querySelector(this.games[cookie.load('selectedGame')]['id']).clientHeight})
+  }
+  
   componentWillUnmount() {
     cookie.remove('isPlaying', { path: '/' })
+    window.removeEventListener('resize', this.getHeight.bind(this), false);
   }
 
   render(){

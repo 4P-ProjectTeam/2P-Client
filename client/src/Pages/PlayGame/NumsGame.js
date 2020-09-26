@@ -79,8 +79,6 @@ class NumsGame extends Component {
       opponentUsername: '',
       width: document.body.clientWidth / 4,
       height: document.body.clientWidth / 2,
-      canvasHeight: 0,
-      canvasWidth: 0,
       currentMole: 0,
       clickedNums: 0,
       count: '대기',
@@ -108,6 +106,8 @@ class NumsGame extends Component {
 
       warning: 0,
       warningRival: 0,
+
+      canvasHeight: 0,
     };
     this.canvas = null;
     this.ctx = null;
@@ -125,7 +125,7 @@ class NumsGame extends Component {
     this.out = false;
     this.result = false;
 
-    this.numPad = [];
+    
 
     let gifImages = [];
 
@@ -135,9 +135,10 @@ class NumsGame extends Component {
       this.tileData.push({ img: item });
     });
 
-    for (let i = 0; i < 14; i++) {
-      this.numPad.push(new KeyPad(this.state.width, this.state.height, this.state.width / 10, i));
-    }
+    // this.numPad = [];
+    // for (let i = 0; i < 14; i++) {
+    //   this.numPad.push(new KeyPad(this.state.width, this.state.height, this.state.width / 10, i));
+    // }
   }
 
   componentDidMount() {
@@ -150,8 +151,7 @@ class NumsGame extends Component {
       });
     })();
 
-    this.setState({ canvasHeight: document.querySelector('#numsgame').clientHeight})
-    this.setState({ canvasWidth: document.querySelector('#numsgame').clientWidth})
+    
     this.canvas = document.getElementById('canvas');
     this.ctx = this.canvas.getContext('2d');
 
@@ -412,7 +412,7 @@ class NumsGame extends Component {
   // 화면그리기
   animate(t) {
     window.requestAnimationFrame(this.animate.bind(this));
-    this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // this.numPad의 모든 요소를 각자의 위치에 생성
     for (let i = 0; i < this.numPad.length; i++) {
@@ -461,19 +461,23 @@ class NumsGame extends Component {
   // 화면크기 재설정 함수
   resize() {
     this.stageWidth = document.body.clientWidth;
-    this.stageHeight = document.body.clientHeight;
+    this.stageHeight = document.body.clientWidth;
 
-    if (document.body.clientWidth > 750) {
+    if (document.body.clientWidth > 650) {
       this.canvas.width = Math.floor(this.stageWidth / 4);
       this.canvas.height = Math.floor(this.stageWidth / 2.4);
+    } else {
+      this.canvas.width = Math.floor(this.stageWidth * 0.8);
+      this.canvas.height = Math.floor(this.stageWidth * 1.4);
     }
-
-    this.setState({ width: this.canvas.width, height: this.canvas.height });
 
     this.numPad = [];
     for (let i = 0; i < 14; i++) {
-      this.numPad.push(new KeyPad(this.state.width, this.state.height, this.state.width / 10, i));
+      this.numPad.push(new KeyPad(this.canvas.width, this.canvas.height, this.canvas.width / 10, i));
     }
+    
+    this.setState({ width: this.canvas.width, height: this.canvas.height });
+    this.setState({canvasHeight : document.querySelector('#numsgame').clientHeight})
   }
 
   turnChange(isMyturn) {
@@ -582,22 +586,32 @@ class NumsGame extends Component {
     }
     return answer;
   }
+
   
   render() {
     const { classes } = this.props;
+    let style = {
+      position: 'fixed',
+      width: '90vw',
+      height: this.state.height,
+      top: '50%',
+      right: '50%',
+      marginTop: `-${this.state.canvasHeight / 2}px`,
+      marginRight: `-45vw`,
+    }
+    let mobileStyle = {
+      position: 'fixed',
+      width: '90vw',
+      height: this.state.height,
+      top: '0%',
+      right: '50%',
+      marginRight: `-45vw`,
+    }
 
     return (
       <Grid container direction='row' justify='space-evenly' alignItems='center' 
         id='numsgame'
-        style={{
-          position: 'fixed',
-          width: '90vw',
-          height: `${this.state.height * 0.9}px`,
-          top: '50%',
-          right: '50%',
-          marginTop: `-${(this.state.height * 0.9) / 2}px`,
-          marginRight: `-45vw`,
-        }}
+        style={(document.body.clientWidth > 650 ? style : mobileStyle)}
       >
         {this.state.winner !== '' 
           ? this.state.rivalName === 'COMPUTER'
@@ -605,17 +619,19 @@ class NumsGame extends Component {
             : <Gameover winner={this.state.winner} />
           : null}
 
-        <Grid item>
-          <RivalCard 
-            width={this.state.width}
-            username={this.state.rivalName} 
-            theNumber={this.state.myTurn ? '대기' : this.state.count}
-            avatar={this.state.rivalAvatar}
-            computerModeStart={this.computerModeStart.bind(this)}
-            myTurn={this.state.myTurn}
-            yellowCard={this.state.warningRival}
-          />
-        </Grid>
+        {document.body.clientWidth > 650 ? (
+          <Grid item>
+            <RivalCard 
+              width={this.state.width}
+              username={this.state.rivalName} 
+              theNumber={this.state.myTurn ? '대기' : this.state.count}
+              avatar={this.state.rivalAvatar}
+              computerModeStart={this.computerModeStart.bind(this)}
+              myTurn={this.state.myTurn}
+              yellowCard={this.state.warningRival}
+            />
+          </Grid>
+        ) : null }
 
         <Paper
           id='paper'
@@ -629,78 +645,86 @@ class NumsGame extends Component {
           <canvas id='canvas' />
         </Paper>
 
-        <Grid item>
-          <UserCard 
-            width={this.state.width} 
-            userAvatar={this.state.userAvatar} 
-            theNumber={this.state.myTurn ? this.state.count : '대기'} 
-            myTurn={this.state.myTurn}
-            warningAlert={this.state.wrongInput}
-            yellowCard={this.state.warning}
-          />
-        </Grid>
+        {document.body.clientWidth > 650 ? (
+          <Grid item>
+            <UserCard 
+              width={this.state.width} 
+              userAvatar={this.state.userAvatar} 
+              theNumber={this.state.myTurn ? this.state.count : '대기'} 
+              myTurn={this.state.myTurn}
+              warningAlert={this.state.wrongInput}
+              yellowCard={this.state.warning}
+            />
+          </Grid>
+        ) : null }
 
+        {document.body.clientWidth > 650 ? null : (
+          <Paper style={{
+            position: 'fixed',
+            bottom: '0%',
+            width: '100vw',
+            height: '30vw'
+          }}>
+            <Grid container direction='row' justify='center' alignItems='center'>
+              <Grid item>
+                {!this.state.rivalName ? (
+                  <Button color="secondary" variant="outlined" style={{width: '15vw', height: '15vw'}} onClick={this.computerModeStart.bind(this)}>
+                    <Typography style={{ fontSize: '2vw' }}>
+                      컴퓨터<br/>대결시작
+                    </Typography>
+                  </Button>
+                ) : (
+                  <>
+                    <img src={this.state.rivalAvatar} style={{width: '15vw', height: '15vw'}} />
+                    <Typography style={{ fontSize: '4vw' }}>
+                      {this.state.rivalName}
+                    </Typography>
+                  </>
+                )}
+            </Grid>
 
-        {/* <Paper style={{
-          position: 'fixed',
-          bottom: '0%',
-          width: '100vw',
-          height: '30vw'
-        }}>
-          <Grid container direction='row' justify='center' alignItems='center'>
             <Grid item>
-              {!this.state.rivalName ? (
-                <Button color="secondary" variant="outlined" style={{width: '15vw', height: '15vw'}} onClick={this.computerModeStart.bind(this)}>
-                  <Typography style={{ fontSize: '2vw' }}>
-                    컴퓨터<br/>대결시작
-                  </Typography>
-                </Button>
-              ) : (
-                <>
-                  <img src={this.state.rivalAvatar} style={{width: '15vw', height: '15vw'}} />
-                  <Typography style={{ fontSize: '2vw' }}>
-                    {this.state.rivalName}
-                  </Typography>
-                </>
-              )}
-          </Grid>
+              <Typography style={{ fontSize: '10vw' }}>
+                {this.state.myTurn ? '대기' : this.state.count}
+              </Typography>
+            </Grid>
 
-          <Grid item>
-            <Typography style={{ fontSize: '10vw' }}>
-              {this.state.myTurn ? '대기' : this.state.count}
-            </Typography>
-          </Grid>
+            <div style={{
+              width: '10vw'
+            }}></div>
 
-          <Grid item>
-            <Typography style={{ fontSize: '10vw' }}>
-              {this.state.myTurn ? this.state.count : '대기'}
-            </Typography>
-          </Grid>
+            <Grid item>
+              <Typography style={{ fontSize: '10vw' }}>
+                {this.state.myTurn ? this.state.count : '대기'}
+              </Typography>
+            </Grid>
 
 
-          <Grid item>
-            <img src={this.state.userAvatar} 
-              style={{
-                width: '15vw',
-                height: '15vw',
-            }} />
-            <Typography style={{ fontSize: '2vw' }}>
-              {this.state.userName}
-            </Typography>
-          </Grid>
+            <Grid item>
+              <img src={this.state.userAvatar} 
+                style={{
+                  width: '15vw',
+                  height: '15vw',
+              }} />
+              <Typography style={{ fontSize: '4vw' }}>
+                {this.state.userName}
+              </Typography>
+            </Grid>
 
-          </Grid>
+            </Grid>
 
-        </Paper> */}
+          </Paper>
+        )}
 
 
-
-        <Emoji 
-          openEmojiList={this.openEmojiList.bind(this)} 
-          showEmojis={this.state.showEmojis}
-          activeEmoji={this.activeEmoji.bind(this)}
-          tileData={this.tileData}
-        />
+        {document.body.clientWidth > 650 ? (
+          <Emoji 
+            openEmojiList={this.openEmojiList.bind(this)} 
+            showEmojis={this.state.showEmojis}
+            activeEmoji={this.activeEmoji.bind(this)}
+            tileData={this.tileData}
+          />
+        ) : null }
       </Grid>
     );
   }

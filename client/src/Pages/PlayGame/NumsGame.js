@@ -5,8 +5,9 @@ import PropTypes from 'prop-types';
 import cookie from 'react-cookies';
 import Gameover from '../../Components/PlayGame/Gameover';
 import MoleScoreCard from '../../Components/PlayGame/MoleScoreCard';
-import UserCard from '../../Components/PlayGame/MoleGame/UserCard'
-import RivalCard from '../../Components/PlayGame/MoleGame/RivalCard'
+import UserCard from '../../Components/PlayGame/userCard/UserCard';
+import RivalCard from '../../Components/PlayGame/userCard/RivalCard';
+import MobileUserCard from '../../Components/PlayGame/userCard/mobileUser';
 import Emoji from '../../Components/PlayGame/Emoji';
 
 import { Grid, Typography, Tooltip, Fab, Button, Paper, GridList, GridListTile, GridListTileBar, Input } from '@material-ui/core';
@@ -21,10 +22,10 @@ import InfoIcon from '@material-ui/icons/Info';
 import socketio from 'socket.io-client';
 let socket;
 
+
 const styles = (theme) => ({
   Paper: {
     backgroundColor: 'white',
-    margin: theme.spacing(3, 3),
     background: '#00babd',
   },
   root: {
@@ -86,8 +87,16 @@ class NumsGame extends Component {
 
       resultPad: [],
 
-      RivalNums: [],
-      myNums: [],
+      RivalNums: [
+        {number: '1234', result: '1S1B'},
+        {number: '1234', result: '1S1B'},
+        {number: '1234', result: '1S1B'},
+      ],
+      myNums: [
+        {number: '1234', result: '1S1B'},
+        {number: '1234', result: '1S1B'},
+        {number: '1234', result: '1S1B'},
+      ],
 
       board: true,
       myTurn: true,
@@ -374,16 +383,17 @@ class NumsGame extends Component {
 
   // 일정 시간 후에 현황판 출력
   printBoard() {
+    
     // 유저가 입력한 게임결과 출력
     this.state.myNums.map((item, index) => {
-      this.ctx.font = `700 ${this.radius * 0.9}px san serif`;
+      this.ctx.font = `700 ${this.state.width / 12}px san serif`;
       this.ctx.fillText(
         `${item.number}`,
-        this.state.width / 1.8,
+        this.state.width / 1.9,
         this.state.height / 8 + (this.state.height / 13) * index
       );
 
-      this.ctx.font = `300 ${this.radius * 0.6}px san serif`;
+      this.ctx.font = `300 ${this.state.width / 15}px san serif`;
       this.ctx.fillText(
         `${item.result}`,
         this.state.width / 1.4,
@@ -393,17 +403,17 @@ class NumsGame extends Component {
 
     // 상대방이 입력한 게임결과 출력
     this.state.RivalNums.map((item, index) => {
-      this.ctx.font = `700 ${this.radius * 0.9}px san serif`;
+      this.ctx.font = `700 ${this.state.width / 12}px san serif`;
       this.ctx.fillText(
         `${item.number}`,
         this.state.width / 7,
         this.state.height / 8 + (this.state.height / 13) * index
       );
 
-      this.ctx.font = `300 ${this.radius * 0.6}px san serif`;
+      this.ctx.font = `300 ${this.state.width / 15}px san serif`;
       this.ctx.fillText(
         `${item.result}`,
-        this.state.width / 3.3,
+        this.state.width / 3,
         this.state.height / 8 + (this.state.height / 13) * index
       );
     });
@@ -460,13 +470,22 @@ class NumsGame extends Component {
 
   // 화면크기 재설정 함수
   resize() {
+    
     this.stageWidth = document.body.clientWidth;
     this.stageHeight = document.body.clientWidth;
 
+    let mobileUserCardHeight = document.querySelector('#mobileUser') ? document.querySelector('#mobileUser').clientHeight : 0;
+
     if (document.body.clientWidth > 650) {
-      this.canvas.width = Math.floor(this.stageWidth / 4);
-      this.canvas.height = Math.floor(this.stageWidth / 2.4);
+      this.canvas.width = Math.floor(this.stageWidth / 3.5);
+      this.canvas.height = Math.floor(this.stageWidth / 2);
+    } else if (window.innerHeight - mobileUserCardHeight < Math.floor(this.stageWidth * 1.4)) {
+      // 캔버스가 커서 userCard와 겹치는 경우
+      console.log('겹친다')
+      this.canvas.height = window.innerHeight - mobileUserCardHeight * 1.4;
+      this.canvas.width = this.canvas.height / 1.8
     } else {
+      // this.canvas.width = Math.floor(this.stageWidth * 0.8);
       this.canvas.width = Math.floor(this.stageWidth * 0.8);
       this.canvas.height = Math.floor(this.stageWidth * 1.4);
     }
@@ -593,17 +612,17 @@ class NumsGame extends Component {
     let style = {
       position: 'fixed',
       width: '90vw',
-      height: this.state.height,
+      height: '60vw',
       top: '50%',
       right: '50%',
-      marginTop: `-${this.state.canvasHeight / 2}px`,
+      marginTop: `-30vw`,
       marginRight: `-45vw`,
     }
     let mobileStyle = {
       position: 'fixed',
       width: '90vw',
       height: this.state.height,
-      top: '0%',
+      top: '5vh',
       right: '50%',
       marginRight: `-45vw`,
     }
@@ -639,10 +658,20 @@ class NumsGame extends Component {
             width: this.state.width,
             height: this.state.height,
             borderRadius: `${this.state.width/10}px`,
+            // marginTop: '10vh',
           }}
-          className={classes.Paper}
         >
           <canvas id='canvas' />
+          <MobileUserCard 
+            myTurn={this.state.myTurn}
+            rivalName={this.state.rivalName}
+            rivalAvatar={this.state.rivalAvatar}
+            theNumber={this.state.count}
+            warningAlert={this.state.wrongInput}
+            userAvatar={this.state.userAvatar}
+            userName={cookie.load('username')}
+            computerModeStart={this.computerModeStart.bind(this)}
+          />
         </Paper>
 
         {document.body.clientWidth > 650 ? (
@@ -650,6 +679,7 @@ class NumsGame extends Component {
             <UserCard 
               width={this.state.width} 
               userAvatar={this.state.userAvatar} 
+              userName={cookie.load('username')}
               theNumber={this.state.myTurn ? this.state.count : '대기'} 
               myTurn={this.state.myTurn}
               warningAlert={this.state.wrongInput}
@@ -658,63 +688,7 @@ class NumsGame extends Component {
           </Grid>
         ) : null }
 
-        {document.body.clientWidth > 650 ? null : (
-          <Paper style={{
-            position: 'fixed',
-            bottom: '0%',
-            width: '100vw',
-            height: '30vw'
-          }}>
-            <Grid container direction='row' justify='center' alignItems='center'>
-              <Grid item>
-                {!this.state.rivalName ? (
-                  <Button color="secondary" variant="outlined" style={{width: '15vw', height: '15vw'}} onClick={this.computerModeStart.bind(this)}>
-                    <Typography style={{ fontSize: '2vw' }}>
-                      컴퓨터<br/>대결시작
-                    </Typography>
-                  </Button>
-                ) : (
-                  <>
-                    <img src={this.state.rivalAvatar} style={{width: '15vw', height: '15vw'}} />
-                    <Typography style={{ fontSize: '4vw' }}>
-                      {this.state.rivalName}
-                    </Typography>
-                  </>
-                )}
-            </Grid>
-
-            <Grid item>
-              <Typography style={{ fontSize: '10vw' }}>
-                {this.state.myTurn ? '대기' : this.state.count}
-              </Typography>
-            </Grid>
-
-            <div style={{
-              width: '10vw'
-            }}></div>
-
-            <Grid item>
-              <Typography style={{ fontSize: '10vw' }}>
-                {this.state.myTurn ? this.state.count : '대기'}
-              </Typography>
-            </Grid>
-
-
-            <Grid item>
-              <img src={this.state.userAvatar} 
-                style={{
-                  width: '15vw',
-                  height: '15vw',
-              }} />
-              <Typography style={{ fontSize: '4vw' }}>
-                {this.state.userName}
-              </Typography>
-            </Grid>
-
-            </Grid>
-
-          </Paper>
-        )}
+        
 
 
         {document.body.clientWidth > 650 ? (

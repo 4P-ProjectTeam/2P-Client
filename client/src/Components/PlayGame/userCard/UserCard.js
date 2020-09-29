@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import cookie from 'react-cookies';
 import {
   Paper,
   Grid,
@@ -10,7 +9,8 @@ import YellowCard from './YellowCard'
 
 
 function UserCard({ 
-  userAvatar, theNumber, warningAlert, 
+  userAvatar, userName,
+  theNumber, warningAlert, 
   myTurn, yellowCard,  // numsGame
   cardTheme,
 }) {
@@ -50,7 +50,7 @@ function UserCard({
       <Grid container direction='column' justify='center' alignItems='center'>
         <img src={userAvatar} style={style.avatarImg} />
         <Typography style={style.font}>
-          {cookie.load('username')}
+          {userName}
         </Typography>
         <Typography style={style.countFont}>
           {theNumber}

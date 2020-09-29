@@ -96,18 +96,18 @@ class PlayGame extends Component {
             >
               <Paper 
                 id="gamePaper"
-                style={{ 
+                style={document.body.clientWidth > 650 ? { 
                   backgroundColor: 'transparent',
                   position: 'fixed',
                   width: `90vw`,
-                  height: `${this.state.gameHeight}px`,
+                  height: `60vw`,
                   top: '50%',
                   right: '50%',
-                  marginTop: `-${this.state.gameHeight / 2}px`,
+                  marginTop: `-30vw`,
                   marginRight: `-45vw`,
                   boxShadow: this.games[cookie.load('selectedGame')]['shadow'],
                   border: cookie.load('selectedGame') === '2' ? '0.1vw solid #fff' : '',
-                }}>
+                } : null}>
                   { this.games[cookie.load('selectedGame')]['tag'] }
               </Paper> 
             </div>

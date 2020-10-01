@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Gameover from '../../Components/PlayGame/Gameover';
-import UserCard from '../../Components/PlayGame/MoleGame/UserCard'
-import RivalCard from '../../Components/PlayGame/MoleGame/RivalCard'
+import UserCard from '../../Components/PlayGame/userCard/UserCard'
+import RivalCard from '../../Components/PlayGame/userCard/RivalCard'
 import Emoji from '../../Components/PlayGame/Emoji';
 
 import { Paper, Typography, Tooltip, Fab, Grid, GridList, GridListTile, Button } from '@material-ui/core';

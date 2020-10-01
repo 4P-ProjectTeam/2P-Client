@@ -9,9 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import NumsGame from './NumsGame';
 import BDman from './BDman';
 import MoleGame from './MoleGame';
-import PongGame from './PongGame';
-import { Translate } from '@material-ui/icons';
-
 
 const styles = (theme) => ({
   paper: {
@@ -25,7 +22,6 @@ const styles = (theme) => ({
     marginRight: '-45vw',
   },
   space: {
-    height: document.body.clientHeight,
     display: 'flex',
     height: '100vh',
     // alignItems: 'center',
@@ -63,52 +59,70 @@ class PlayGame extends Component {
   }
 
   componentWillMount() {
-    
     if (!cookie.load('selectedGame')) {
       this.props.history.push('/')
     } 
   }
   
   componentDidMount() {
-    this.getHeight();
-    window.addEventListener('resize', this.getHeight.bind(this), false);
+    this.getWidth();
+    window.addEventListener('resize', this.getWidth.bind(this), false);
   }
 
-  getHeight() {
-    this.setState({ gameHeight: document.querySelector(this.games[cookie.load('selectedGame')]['id']).clientHeight})
+  getWidth() {
+    this.setState({ gameWidth: window.innerWidth})
   }
   
   componentWillUnmount() {
     cookie.remove('isPlaying', { path: '/' })
-    window.removeEventListener('resize', this.getHeight.bind(this), false);
+    window.removeEventListener('resize', this.getWidth.bind(this), false);
   }
 
   render(){
     const { classes } = this.props;
 
+    const selectedGame = this.games[cookie.load('selectedGame')];
+    
+    const style = {
+      backgroundColor: 'transparent',
+      position: 'fixed',
+      top: '50%',
+      right: '50%',
+      height: `60vw`,
+      width: `90vw`,
+      marginTop: `-30vw`,
+      marginRight: `-45vw`,
+      boxShadow: selectedGame['shadow'],
+      border: selectedGame.id === '#bdman' ? '0.1vw solid #fff' : '',
+    }
+    const fixedStyle = {
+      backgroundColor: 'transparent',
+      position: 'fixed',
+      top: '50%',
+      right: '50%',
+      height: 614,
+      width: 922,
+      marginTop: -307,
+      marginRight: -461,
+      boxShadow: selectedGame['shadow'],
+      border: selectedGame.id === '#bdman' ? '0.1vw solid #fff' : '',
+    }
+
+
     return (
       <div>
         {
           cookie.load('selectedGame')
-          ? <div 
-              className={classes.space} 
-              style={{ backgroundColor: this.games[cookie.load('selectedGame')]['color'] }}
+          ? <div className={classes.space} 
+              style={{ backgroundColor: selectedGame['color'] }}
             >
               <Paper 
                 id="gamePaper"
-                style={document.body.clientWidth > 650 ? { 
-                  backgroundColor: 'transparent',
-                  position: 'fixed',
-                  width: `90vw`,
-                  height: `60vw`,
-                  top: '50%',
-                  right: '50%',
-                  marginTop: `-30vw`,
-                  marginRight: `-45vw`,
-                  boxShadow: this.games[cookie.load('selectedGame')]['shadow'],
-                  border: cookie.load('selectedGame') === '2' ? '0.1vw solid #fff' : '',
-                } : null}>
-                  { this.games[cookie.load('selectedGame')]['tag'] }
+                style={this.state.gameWidth > 1024 ? fixedStyle : 
+                        this.state.gameWidth > 700 ? style : 
+                        null}
+              >
+                  { selectedGame['tag'] }
               </Paper> 
             </div>
           : null

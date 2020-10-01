@@ -57,7 +57,7 @@ function MobileUserCard({
   }
   return (
     <>
-      {document.body.clientWidth > 650 ? null : (
+      {document.body.clientWidth > 700 ? null : (
           <>
             <Grid container direction='row' justify='center' alignItems='center'
               style={style.rivalCard}>

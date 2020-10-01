@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import cookie from 'react-cookies';
 import Gameover from '../../Components/PlayGame/Gameover';
 import MoleScoreCard from '../../Components/PlayGame/MoleScoreCard';
-import UserCard from '../../Components/PlayGame/MoleGame/UserCard'
-import RivalCard from '../../Components/PlayGame/MoleGame/RivalCard'
+import UserCard from '../../Components/PlayGame/userCard/UserCard'
+import RivalCard from '../../Components/PlayGame/userCard/RivalCard'
 import Emoji from '../../Components/PlayGame/Emoji';
 
 import { Paper, Grid, Modal } from '@material-ui/core';

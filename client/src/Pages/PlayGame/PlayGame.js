@@ -23,9 +23,7 @@ const styles = (theme) => ({
   },
   space: {
     display: 'flex',
-    height: '100vh',
-    // alignItems: 'center',
-    justifyContent: 'center',
+    height: window.innerHeight,
   },
   
 });

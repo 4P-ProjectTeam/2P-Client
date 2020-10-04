@@ -1,5 +1,4 @@
-import React from 'react'
-import { withRouter } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
 
 import {
   Tooltip,
@@ -8,21 +7,19 @@ import {
   GridListTile,
 } from '@material-ui/core'
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
+import CloseIcon from '@material-ui/icons/Close';
 
 const style = {
   buttonPos: {
     position: 'fixed',
-    bottom: '3%',
     right: '3%',
   },
   listPos: {
     position: 'fixed',
     right: '1%',
-    bottom: '100px',
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
-    overflow: 'hidden',
     backgroundColor: '#fff',
   },
   listCard: {
@@ -36,36 +33,46 @@ const style = {
   img: {
     width: '70px', 
     height: '70px',
+  },
+  background: {
+    position: 'fixed', 
+    top:'0px', 
+    right:'0px', 
+    width:'100vw', 
+    height:'100vh', 
+    backgroundColor: 'rgb(0, 0, 0, 0.5)' 
   }
 }
 
 
-function Emoji({ openEmojiList, activeEmoji, showEmojis, tileData }) {
+export default function Emoji({ openEmojiList, activeEmoji, showEmojis, tileData }) {
   return (
     <>
-      <Tooltip title='이모티콘' aria-label='add' onClick={openEmojiList}>
-        <Fab color='secondary' style={style.buttonPos}>
-          <EmojiEmotionsIcon />
-        </Fab>
-      </Tooltip>
-
-      <div style={style.listPos}>
-        {showEmojis && 
-          <GridList style={style.listCard}>
-            {tileData.map((tile) => (
-              <GridListTile
-                key={tile.img}
-                style={style.tile}
-                onClick={() => activeEmoji(tile.img)}
-              >
+      { showEmojis && 
+        <>
+          <div onClick={openEmojiList} style={style.background} />
+          <GridList style={{
+            ...style.listPos,
+            bottom: window.innerWidth > 700 ? '100px' : '35%',
+            width: window.innerWidth > 700 ? '200px' : '100px', 
+            height: window.innerWidth > 700 ? '40vw' : '60vh', 
+          }}>
+            { tileData.map((tile) => (
+              <GridListTile key={tile.img} style={style.tile} onClick={() => activeEmoji(tile.img)}>
                 <img src={tile.img} alt={tile.title} style={style.img} />
               </GridListTile>
             ))}
           </GridList>
-        }
-      </div>
+        </>   
+      }
+      <Tooltip title={ showEmojis ? '닫기' : '이모티콘' } aria-label='add' onClick={ openEmojiList }>
+        <Fab color='secondary' style={{
+          ...style.buttonPos, 
+          bottom: window.innerWidth > 700 ? '3%' : '25%',
+        }}>
+          { showEmojis ? <CloseIcon /> : <EmojiEmotionsIcon /> }
+        </Fab>
+      </Tooltip>
     </>
   )
 }
-
-export default withRouter(Emoji)

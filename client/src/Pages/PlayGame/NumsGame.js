@@ -456,7 +456,6 @@ class NumsGame extends Component {
   resize() {
     
     this.stageWidth = document.body.clientWidth;
-    this.stageHeight = document.body.clientWidth;
 
     let mobileUserCardHeight = document.querySelector('#mobileUser') ? document.querySelector('#mobileUser').offsetHeight : 0;
 
@@ -482,7 +481,6 @@ class NumsGame extends Component {
     for (let i = 0; i < 14; i++) {
       this.numPad.push(new KeyPad(this.canvas.width, this.canvas.height, this.canvas.width / 10, i));
     }
-    
     this.setState({ width: this.canvas.width, height: this.canvas.height });
   }
 
@@ -658,7 +656,7 @@ class NumsGame extends Component {
             myTurn={this.state.myTurn}
             rivalName={this.state.rivalName}
             rivalAvatar={this.state.rivalAvatar}
-            theNumber={this.state.count}
+            countNum={this.state.count}
             warningAlert={this.state.wrongInput}
             userAvatar={this.state.userAvatar}
             userName={cookie.load('username')}

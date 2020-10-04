@@ -92,13 +92,13 @@ function RivalCard({
 
   return (
     <>
-      {document.body.clientWidth > 700 ? (
+      {window.innerWidth > 700 ? (
         <Paper style={styleObj.root}>
           <Grid container direction='column' justify='center' alignItems='center'>
             {!username.length ? (
               <Button color="secondary" variant="outlined" style={styleObj.avatarImg} onClick={computerModeStart}>
                 <Typography style={styleObj.font}>
-                  컴퓨터<br/>대결시작
+                  연습하기<br/>START
                 </Typography>
               </Button>
             ) : (

@@ -3,14 +3,13 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Gameover from '../../Components/PlayGame/Gameover';
-import UserCard from '../../Components/PlayGame/userCard/UserCard'
-import RivalCard from '../../Components/PlayGame/userCard/RivalCard'
+import UserCard from '../../Components/PlayGame/userCard/UserCard';
+import RivalCard from '../../Components/PlayGame/userCard/RivalCard';
+import MobileUserCard from '../../Components/PlayGame/userCard/mobileUser';
 import Emoji from '../../Components/PlayGame/Emoji';
+import ExitButton from '../../Components/PlayGame/ExitButton'
 
 import { Paper, Typography, Tooltip, Fab, Grid, GridList, GridListTile, Button } from '@material-ui/core';
-
-import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 import { withStyles } from '@material-ui/core/styles';
 import { Block } from './BDBlock';
@@ -77,7 +76,7 @@ class Game extends Component {
     super(props);
     this.state = {
       width: Math.floor(document.body.clientWidth / 3.5),
-      height: Math.floor(document.body.clientHeight / 1.2),
+      height: Math.floor(document.body.clientHeight / 2.4),
 
       canvasHeight: 0,
       canvasWidth: 0,
@@ -106,6 +105,7 @@ class Game extends Component {
       //game start
       gameStart: false,
     };
+
     //초기화
     this.canvas = null;
     this.ctx = null;
@@ -118,6 +118,7 @@ class Game extends Component {
     this.blockPosX = this.state.width / 2 - this.blockSizeX / 2;
     this.blockPosY = this.state.height - this.blockSizeY * 2.5 ;
     this.blockPosInitX = this.state.width / 2 - this.blockSizeX / 2;
+
     // Rival Block
     this.RivalSizeX = this.state.width / 10;
     this.RivalSizeY = this.state.height / 20;
@@ -128,6 +129,8 @@ class Game extends Component {
     // Bullet
     this.BulletRadius = this.state.width / 40;
     this.BulletSpeed = this.state.width / 100;
+
+    // magazine
     this.bullets = [];
     this.RivalBullets = [];
     this.aim = 0;
@@ -275,11 +278,16 @@ class Game extends Component {
       });
     })();
 
+    
     this.setState({ canvasHeight: document.querySelector('#bdman').clientHeight})
     this.setState({ canvasWidth: document.querySelector('#bdman').clientWidth})
     this.canvas = document.getElementById('canvas');
     this.ctx = this.canvas.getContext('2d');
-
+    
+    this.resize();
+    window.requestAnimationFrame(this.animate.bind(this));
+    window.addEventListener('resize', this.resize.bind(this), false);
+    
     this.block = new Block(
       this.blockSizeX,
       this.blockSizeY,
@@ -297,8 +305,6 @@ class Game extends Component {
       this.state.height
     );
 
-    this.resize();
-    window.requestAnimationFrame(this.animate.bind(this));
 
     // 블록 이동
     document.addEventListener('keydown', this.keydown, true);
@@ -412,6 +418,7 @@ class Game extends Component {
   }
 
   componentWillUnmount() {
+    window.removeEventListener('resize', this.resize.bind(this), false);
     document.removeEventListener('keydown', this.keydown, true);
     socket.disconnect();
   }
@@ -443,15 +450,31 @@ class Game extends Component {
 
   // 화면크기 재설정 함수
   resize() {
-    this.stageWidth = document.body.clientWidth;
-    this.stageHeight = document.body.clientHeight;
-    
-    this.canvas.width = Math.floor(this.stageWidth / 3.5);
-    this.canvas.height = Math.floor(this.stageHeight / 1.2);
+
+    let mobileUserCardHeight = document.querySelector('#mobileUser') ? document.querySelector('#mobileUser').offsetHeight : 0;
+
+    if (document.body.clientWidth > 1024) {
+      this.canvas.width = 365.71
+      this.canvas.height = 568.89
+    } else if (document.body.clientWidth > 700) {
+      this.canvas.width = Math.floor(document.body.clientWidth / 2.8);
+      this.canvas.height = Math.floor(document.body.clientWidth / 1.8);
+    } else {
+      this.canvas.width = Math.floor((document.body.clientWidth / 2.8) * 2.5);
+      this.canvas.height = Math.floor((document.body.clientWidth / 1.8) * 2.5);
+    }
+
+    // 캔버스가 커서 userCard와 겹치는 경우
+    if (window.innerHeight - mobileUserCardHeight < this.canvas.height + (window.innerHeight / 15)) {
+      this.canvas.height = window.innerHeight - mobileUserCardHeight * 1.4;
+      this.canvas.width = this.canvas.height * 0.64
+    }
 
     this.setState({ width: this.canvas.width, height: this.canvas.height });
+    
   }
 
+  // user magazine UI
   makeBullet(ctx) {
     ctx.fillStyle = '#ffff8c';
     for (let i = 0; i < this.state.bullet; i++) {
@@ -610,18 +633,27 @@ class Game extends Component {
 
   render() {
     const { classes, avatarImg } = this.props;
+    let style = {
+      position: 'fixed',
+      width: '90vw',
+      height: '60vw',
+      top: '50%',
+      right: '50%',
+      marginTop: `-30vw`,
+      marginRight: `-45vw`,
+    }
+    let mobileStyle = {
+      position: 'fixed',
+      width: '90vw',
+      height: this.state.height,
+      top: window.innerHeight / 30,
+      right: '50%',
+      marginRight: `-45vw`,
+    }
 
     return (
-      <Grid container direction='row' justify='space-evenly' alignItems='center' id='bdman'
-        style={{
-          position: 'fixed',
-          width: '80vw',
-          height: this.state.height * 1.1,
-          top: '50%',
-          right: '50%',
-          marginTop: `-${this.state.canvasHeight / 2}px`,
-          marginRight: `-45vw`,
-        }}
+      <Grid container direction='row' justify='center' alignItems='center' id='bdman'
+        style={(document.body.clientWidth > 700 ? style : mobileStyle)}
       >
         {this.state.winner !== '' ? 
           this.state.rivalName === 'COMPUTER' ? (
@@ -632,51 +664,51 @@ class Game extends Component {
           null
         }
 
-        <Button style={{
-          position: 'fixed',
-          top: '2%',
-          right: '2%',
-        }}>
-          <ExitToAppIcon style={{ color: '#fff', fontSize: '3vw' }}/>
-        </Button>
 
-        <Grid item>
-          <RivalCard 
-            width={this.state.width}
-            username={this.state.rivalName} 
-            theNumber={this.state.rivalScore}
-            avatar={this.state.rivalAvatar}
+        <RivalCard 
+          width={this.state.width}
+          username={this.state.rivalName} 
+          theNumber={this.state.rivalScore}
+          avatar={this.state.rivalAvatar}
+          computerModeStart={this.computerModeStart.bind(this)}
+          cardTheme={'black'}
+        />
+
+        <Paper
+          id='paper'
+          style={{
+            width: this.state.width,
+            height: this.state.height,
+            border: '0.3vw solid #fff',
+            boxShadow: `${window.innerWidth < 700 ?
+              '-30px -30px 100px 0px #5c0200, 30px 30px 100px 0px #5e5d00' : ''
+            }`,
+          }}
+        >
+          <canvas id='canvas' />
+          <MobileUserCard 
+            cardTheme={'black'}
+            rivalName={this.state.rivalName}
+            rivalAvatar={this.state.rivalAvatar}
+            rivalScore={this.state.rivalScore}
+            userName={cookie.load('username')}
+            userAvatar={this.state.userAvatar}
+            userScore={this.state.myScore}
             computerModeStart={this.computerModeStart.bind(this)}
-            cardTheme={'black'}
           />
-        </Grid>
+        </Paper>
 
-        <Grid item>
-          <Paper
-            id='paper'
-            style={{
-              width: this.state.width,
-              height: this.state.height,
-              border: '0.3vw solid #fff',
-              // boxShadow: '0px 0px 200px 0px #616161',
-            }}
-            // className={classes.Paper}
-          >
-            <canvas id='canvas' />
-          </Paper>
-          
-        </Grid>
+        <UserCard 
+          width={this.state.width} 
+          userAvatar={this.state.userAvatar} 
+          theNumber={this.state.myScore} 
+          warningAlert={this.state.bullet === 0}
+          cardTheme={'black'}
+        />
 
-
-        <Grid item>
-          <UserCard 
-            width={this.state.width} 
-            userAvatar={this.state.userAvatar} 
-            theNumber={this.state.myScore} 
-            warningAlert={this.state.bullet === 0}
-            cardTheme={'black'}
-          />
-        </Grid>
+        <ExitButton 
+          theme={'black'}
+        /> 
         
         <Emoji 
           openEmojiList={this.openEmojiList.bind(this)} 

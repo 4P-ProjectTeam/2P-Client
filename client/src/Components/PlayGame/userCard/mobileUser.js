@@ -6,9 +6,12 @@ import {
 } from '@material-ui/core';
 
 function MobileUserCard({
-  myTurn, rivalName, rivalAvatar,
-  theNumber, warningAlert,
-  userAvatar, userName,
+  // numsgame
+  myTurn, warningAlert, countNum, 
+  // bdman  
+  cardTheme,
+  rivalName, rivalAvatar, rivalScore,
+  userAvatar, userName, userScore,
   computerModeStart
 }) {
 
@@ -19,7 +22,8 @@ function MobileUserCard({
     borderRadius: '5vw',
     width: document.body.clientWidth > 500 ? 220 : '45vw',
     height: document.body.clientWidth > 500 ? 170 : '35vw',
-    backgroundColor: 'white',
+    backgroundColor: !cardTheme ? 'white' : 'black',
+    border: !cardTheme ? '' : '2px solid #fff',
   }
 
   let style = {
@@ -27,7 +31,7 @@ function MobileUserCard({
       ...cardStyle,
       left: '3%',
       boxShadow: `${!myTurn 
-        ? '0px 0px 20px 0px #0067c2'
+        ? countNum && '0px 0px 20px 0px #0067c2'
         : '0px 0px 0px 0px #d6d6d6' 
       }`,
     },
@@ -42,17 +46,19 @@ function MobileUserCard({
       }`,
     },
     nameFont: {
-      fontSize: document.body.clientWidth > 500 ? 15 : '4vw',
+      fontSize: document.body.clientWidth > 500 ? 15 : '3.3vw',
       marginTop: document.body.clientWidth > 500 ? -15 : null,
-      width: '30vw'
+      color: !cardTheme ? '#000' : '#fff',
+      width: '30vw',
     },
     numberFont: {
-      fontSize: document.body.clientWidth > 500 ? 40 : '10vw'
+      fontSize: document.body.clientWidth > 500 ? 40 : '10vw',
+      color: !cardTheme ? '#000' : '#fff',
     },
     image: {
       margin: document.body.clientWidth > 500 ? 10 : '2vw',
       width: document.body.clientWidth > 500 ? 90 : '20vw', 
-      height: document.body.clientWidth > 500 ? 90 : '20vw'
+      height: document.body.clientWidth > 500 ? 90 : '20vw',
     },
   }
   return (
@@ -65,14 +71,18 @@ function MobileUserCard({
                 {!rivalName ? (
                   <Button color="secondary" variant="outlined" style={style.image} onClick={computerModeStart}>
                     <Typography style={{fontSize: style.nameFont.fontSize}}>
-                      컴퓨터<br/>대결시작
+                      연습하기<br/>START
                     </Typography>
                   </Button>
                 ) : (
                   <img src={rivalAvatar} style={style.image} />
                 )}
                 <Typography style={style.numberFont}>
-                  {myTurn ? '대기' : theNumber}
+                  { countNum ? (
+                    myTurn ? '대기' : countNum
+                  ) : (
+                    rivalScore 
+                  )}
                 </Typography>
               </>
               <Typography style={style.nameFont}>
@@ -85,7 +95,11 @@ function MobileUserCard({
               style={style.userCard}>
               <>
                 <Typography style={style.numberFont}>
-                  {myTurn ? theNumber : '대기'}
+                  { countNum ? (
+                    myTurn ? countNum : '대기'
+                  ) : (
+                    userScore
+                  )}
                 </Typography>
                 <img src={userAvatar} style={style.image} />
               </>

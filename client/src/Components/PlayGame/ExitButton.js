@@ -8,6 +8,7 @@ export default withRouter(function ExitButton(props) {
   return (
     <IconButton 
       style={{ 
+        color: props.theme ? 'white' : '',
         position: 'fixed', 
         top: '2%', 
         right: '3%', 
